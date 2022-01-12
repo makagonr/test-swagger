@@ -1,0 +1,77 @@
+openapi: 3.0.1
+info:
+  title: Nomagic - Magicloader API
+  description: |
+    This API assumes that WCS or WMS has much more context and information to best optimize overall warehouse operations. Hence we focus here strictly on the robot operations assuming as little business logic as possible. On top of that, it makes it easier to use the same API for different clients.
+  version: 8a
+servers:
+- url: https://localhost/magicloader/v1
+- url: http://localhost/magicloader/v1
+tags:
+- name: Pick Request
+  description: "API handler used to request picking of a single item from a source\
+    \ container. There can be only a single such request in flight (i.e. pending or\
+    \ in progress). WCS can issue a pick request while a place request is executing,\
+    \ given a previous pick request has finished - the next pick request will then\
+    \ be queued and executed when the placing will finish.\n\nAssumptions:\n - When\
+    \ handling pick_request source container is assumed to be ready and cannot be\
+    \ moved until the pick request completes.\n - For optimal performance, we expect\
+    \ the WCS to issue the next pick request soon after the previous place request\
+    \ starts executing.\n - Pick request may be reported as successful, even if Magicloader\
+    \ hasn’t verified yet that the item it picked is the right one; place request\
+    \ may return error for invalid item.\n - If a pick request is reported as FATAL,\
+    \ Magicloader will transition to WAITING_FOR_OPERATOR state. No further requests\
+    \ will be accepted until the operator confirms that the robot can continue.\n\
+    \ \nFuture Improvements:\n - We will add special field prepare_only which will\
+    \ indicate that Magicloader should only prepare for a new item (e.g. by changing\
+    \ tool), but the source tote is not yet ready; once the source tote will come,\
+    \ then request will be updated using PUT method to change prepare_only=False;\
+    \ until prepare_only is True it will be possible to DELETE such requests     \
+    \ \n"
+  externalDocs:
+    description: see
+    url: https://wp.pl
+paths:
+  /container/pick_request/{id}:
+    put:
+      tags:
+      - Magicloader
+      summary: Update an existing pet
+      description: "API handler used to request picking of a single item from a source\
+        \ container. There can be only a single such request in flight (i.e. pending\
+        \ or in progress). WCS can issue a pick request while a place request is executing,\
+        \ given a previous pick request has finished - the next pick request will\
+        \ then be queued and executed when the placing will finish.\n\nAssumptions:\n\
+        \ - When handling pick_request source container is assumed to be ready and\
+        \ cannot be moved until the pick request completes.\n - For optimal performance,\
+        \ we expect the WCS to issue the next pick request soon after the previous\
+        \ place request starts executing.\n - Pick request may be reported as successful,\
+        \ even if Magicloader hasn’t verified yet that the item it picked is the right\
+        \ one; place request may return error for invalid item.\n - If a pick request\
+        \ is reported as FATAL, Magicloader will transition to WAITING_FOR_OPERATOR\
+        \ state. No further requests will be accepted until the operator confirms\
+        \ that the robot can continue.\n \nFuture Improvements:\n - We will add special\
+        \ field prepare_only which will indicate that Magicloader should only prepare\
+        \ for a new item (e.g. by changing tool), but the source tote is not yet ready;\
+        \ once the source tote will come, then request will be updated using PUT method\
+        \ to change prepare_only=False; until prepare_only is True it will be possible\
+        \ to DELETE such requests\n"
+      operationId: create_pick_request
+      parameters:
+      - name: id
+        in: path
+        description: Pet object that needs to be added to the store
+        required: true
+        schema:
+          type: integer
+      responses:
+        400:
+          description: Invalid ID supplied
+          content: {}
+        404:
+          description: Pet not found
+          content: {}
+        405:
+          description: Validation exception
+          content: {}
+components: {}
